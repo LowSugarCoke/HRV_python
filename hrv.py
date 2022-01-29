@@ -103,6 +103,18 @@ def PickRPoint(data,moving_line):
     
     return r_position,r_high
 
+def CalHeartRate(r_position,sample_rate):
+    rr_interval=[]
+    for i in range(2,r_position.size):
+        print(i)
+        rr_interval.append(r_position[i]-r_position[i-1])
+    
+
+    for a in rr_interval:
+        a=a/sample_rate 
+        print(a)    
+    
+
 data = ImportData("180hz_10minute__15frequency_breath.txt")
 diff_data = Differential(data)
 denoise_data = denoise(diff_data)
@@ -113,8 +125,8 @@ moving_line = MovingAverage(denoise_data)
 r_pick,r_high = PickRPoint(denoise_data,moving_line)
 r_pick = np.array(r_pick)
 r_high = np.array(r_high)
-Plot(data,diff_data,denoise_data,baseline_data,moving_line,r_pick,r_high)
-
+# Plot(data,diff_data,denoise_data,baseline_data,moving_line,r_pick,r_high)
+CalHeartRate(r_pick,180)
 
 
 
