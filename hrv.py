@@ -9,15 +9,28 @@ from scipy.integrate import trapz
 from scipy import signal
 
 
+
+# 讀取檔案
+def ImportData(path):
+    np_data = np.loadtxt(path)
+    return np_data
+
+# 微分
 def Differential(data):
-    i=4
     d=np.arange(data.size)
-    for i in range(data.size):
-       d[i]=1.3*abs(data[i]-data[i-2])+1.1*abs(data[i]-2*data[i-2]+data[i-4])+100
+    for i in range(2,data.size-2):
+        # basic differential
+        # d[i+2]= 9*abs(data[i]-data[i-1])
+        
+        # Sutiable for this data
+        # d[i+2]=1.3*abs(data[i]-data[i-2])+1.1*abs(data[i]-2*data[i-2]+data[i-4])
+
+        # So and Chan algorithm
+        d[i+2] = (-2*data[i-2]-data[i-1]+data[i+1]+2*data[i+2])
     return d
 
-# 小波
-def denoise(data):
+    # 小波
+def denoise(data):    
     coeffs = pywt.wavedec(data=data, wavelet='db5', level=9)
     cA9, cD9, cD8, cD7, cD6, cD5, cD4, cD3, cD2, cD1 = coeffs
 
@@ -32,22 +45,20 @@ def denoise(data):
     rdata = pywt.waverec(coeffs=coeffs, wavelet='db5')
     return rdata
 
-def ImportData(path):
-    np_data = np.loadtxt(path)
-    return np_data
-
+    #去除基線飄移
 def BaseLine(data):
     filter = int(0.8*180)
     baseline = medfilt(data,filter+1)
     filter_data = data-baseline
     return filter_data
 
+    #動態閥值
 def MovingAverage(data):
     moving_line = np.arange(float(data.size+1));
     temp=0.0
     i=0
     for i in range(data.size):
-       moving_line[i+1] = moving_line[i]+(10+data[i]-moving_line[i])/30
+       moving_line[i+1] = moving_line[i]+(60+data[i]-moving_line[i])/15
     return moving_line
 
     
@@ -62,16 +73,15 @@ def Plot(ori_data,diff_data,denoise_data,base_line,moving_line,r_pick,r_high):
     fig,ax = plt.subplots()
     plt.plot(x, ori_data, "r")
     plt.plot(diff_x,diff_data,"g")
-    plt.plot(x1,denoise_data-50,"b")
+    plt.plot(x1,denoise_data-150,"b")
     # plt.plot(x2,base_line,"g")
-    plt.plot(x3,moving_line-50,"r")
+    plt.plot(x3,moving_line,"r")
 
     i=1
     for i in np.arange(r_pick.size):
-        circle1 = plt.Circle((r_pick[i],r_high[i]-50),radius=3,color="r",fill=False)
+        circle1 = plt.Circle((r_pick[i],r_high[i]),radius=3,color="r",fill=False)
         ax.add_patch(circle1)
  
-    
     plt.show()
 
 def PickRPoint(data,moving_line):
@@ -119,28 +129,27 @@ def Interpolation(rr_interval):
     
     xx=np.arange(1,np.max(x),steps)
     rr_interpolated = f(xx)
-    # plt.figure(figsize=(20, 15))
+    plt.figure(figsize=(20, 15))
 
-    # plt.subplot(211)
-    # plt.title("RR intervals")
-    # plt.plot(x, rr_interval, color="k", markerfacecolor="#A651D8", markeredgewidth=0, marker="o", markersize=8)
-    # plt.xlabel("Time (s)")
-    # plt.ylabel("RR-interval (ms)")
-    # plt.title("Interpolated")
-    # plt.gca().set_xlim(0, 20)
+    plt.subplot(211)
+    plt.title("RR intervals")
+    plt.plot(x, rr_interval, color="k", markerfacecolor="#A651D8", markeredgewidth=0, marker="o", markersize=8)
+    plt.xlabel("Time (s)")
+    plt.ylabel("RR-interval (ms)")
+    plt.title("Interpolated")
+    plt.gca().set_xlim(0, 20)
 
-    # plt.subplot(212)
-    # plt.title("RR-Intervals (cubic interpolation)")
-    # plt.plot(xx, rr_interpolated, color="k", markerfacecolor="#51A6D8", markeredgewidth=0, marker="o", markersize=8)
-    # plt.gca().set_xlim(0, 20)
-    # plt.xlabel("Time (s)")
-    # plt.ylabel("RR-interval (ms)")
-    # plt.show()
+    plt.subplot(212)
+    plt.title("RR-Intervals (cubic interpolation)")
+    plt.plot(xx, rr_interpolated, color="k", markerfacecolor="#51A6D8", markeredgewidth=0, marker="o", markersize=8)
+    plt.gca().set_xlim(0, 20)
+    plt.xlabel("Time (s)")
+    plt.ylabel("RR-interval (ms)")
+    plt.show()
     
     return rr_interpolated
     
-
-
+#ref:https://www.kaggle.com/stetelepta/exploring-heart-rate-variability-using-python
 def frequency_domain(rr_interpolated, fs=4):
     # Estimate the spectral density using Welch's method
     fxx, pxx = signal.welch(x=rr_interpolated, fs=fs)
@@ -185,49 +194,55 @@ def frequency_domain(rr_interpolated, fs=4):
 
     results['Fraction LF (nu)'] = lf_nu
     results['Fraction HF (nu)'] = hf_nu
+    
+    for k, v in results.items():
+        print("- %s: %.2f" % (k, v))
+    
+    plt.figure(figsize=(20, 7))
+    plt.plot(fxx, pxx, color="k", linewidth=0.3)
+    plt.title("FFT Spectrum (Welch's periodogram)")
+
+    # create interpolation function for plotting frequency bands
+    psd_f = interp1d(fxx, pxx)
+
+    # setup frequency bands for plotting
+    x_vlf = np.linspace(0, 0.04, 100)
+    x_lf = np.linspace(0.04, 0.15, 100)
+    x_hf = np.linspace(0.15, 0.4, 100)
+
+    plt.gca().fill_between(x_vlf, psd_f(x_vlf), alpha=0.2, color="#A651D8", label="VLF")
+    plt.gca().fill_between(x_lf, psd_f(x_lf), alpha=0.2, color="#51A6D8", label="LF")
+    plt.gca().fill_between(x_hf, psd_f(x_hf), alpha=0.2, color="#D8A651", label="HF")
+    plt.gca().set_xlim(0, 0.5)
+    plt.gca().set_ylim(0)
+    plt.xlabel("Frequency (Hz)")
+    plt.ylabel("Density")
+    plt.legend()
+    plt.show()
+    
     return results, fxx, pxx
     
 
-data = ImportData("180hz10minutejack9.5breath.txt")
+
+data = ImportData("180hz_10minute__15frequency_breath.txt")
 diff_data = Differential(data)
 denoise_data = denoise(diff_data)
 baseline_data = BaseLine(denoise_data)
-moving_line = MovingAverage(denoise_data)
+moving_line = MovingAverage(diff_data)
 
 
-r_pick,r_high = PickRPoint(denoise_data,moving_line)
+r_pick,r_high = PickRPoint(diff_data,moving_line)
 r_pick = np.array(r_pick)
 r_high = np.array(r_high)
-# Plot(data,diff_data,denoise_data,baseline_data,moving_line,r_pick,r_high)
+Plot(data,diff_data,denoise_data,baseline_data,moving_line,r_pick,r_high)
 rr_interval = CalHeartRate(r_pick,180)
 print(rr_interval)
 
 rr_interpolated = Interpolation(rr_interval)
 results, fxx, pxx = frequency_domain(rr_interpolated)
-for k, v in results.items():
-    print("- %s: %.2f" % (k, v))
-    
-plt.figure(figsize=(20, 7))
-plt.plot(fxx, pxx, color="k", linewidth=0.3)
-plt.title("FFT Spectrum (Welch's periodogram)")
 
-# create interpolation function for plotting frequency bands
-psd_f = interp1d(fxx, pxx)
 
-# setup frequency bands for plotting
-x_vlf = np.linspace(0, 0.04, 100)
-x_lf = np.linspace(0.04, 0.15, 100)
-x_hf = np.linspace(0.15, 0.4, 100)
 
-plt.gca().fill_between(x_vlf, psd_f(x_vlf), alpha=0.2, color="#A651D8", label="VLF")
-plt.gca().fill_between(x_lf, psd_f(x_lf), alpha=0.2, color="#51A6D8", label="LF")
-plt.gca().fill_between(x_hf, psd_f(x_hf), alpha=0.2, color="#D8A651", label="HF")
-plt.gca().set_xlim(0, 0.5)
-plt.gca().set_ylim(0)
-plt.xlabel("Frequency (Hz)")
-plt.ylabel("Density")
-plt.legend()
-plt.show()
 
 
 
