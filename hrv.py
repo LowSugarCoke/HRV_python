@@ -1,3 +1,4 @@
+from cProfile import label
 import numpy as np
 from scipy.fftpack import fft  
 import matplotlib.pyplot as plt
@@ -13,6 +14,18 @@ from scipy import signal
 # 讀取檔案
 def ImportData(path):
     np_data = np.loadtxt(path)
+    
+    # fig,ax = plt.subplots()
+    
+    # #np.linspace(start,end,total_number)
+    
+    # x = np.linspace(0,np_data.size,np_data.size)
+    
+    # plt.plot(x/180, np_data, "r",label="Origin ecg")
+    
+    # plt.legend()
+    # plt.show()
+    
     return np_data
 
 # 微分
@@ -20,7 +33,7 @@ def Differential(data):
     d=np.arange(data.size)
     for i in range(2,data.size-2):
         # basic differential
-        # d[i+2]= 9*abs(data[i]-data[i-1])
+        # d[i+2]= abs(data[i]-data[i-1])
         
         # Sutiable for this data
         # d[i+2]=1.3*abs(data[i]-data[i-2])+1.1*abs(data[i]-2*data[i-2]+data[i-4])
@@ -58,7 +71,7 @@ def MovingAverage(data):
     temp=0.0
     i=0
     for i in range(data.size):
-       moving_line[i+1] = moving_line[i]+(60+data[i]-moving_line[i])/15
+       moving_line[i+1] = moving_line[i]+(75+data[i]-moving_line[i])/30
     return moving_line
 
     
@@ -71,17 +84,20 @@ def Plot(ori_data,diff_data,denoise_data,base_line,moving_line,r_pick,r_high):
     
 
     fig,ax = plt.subplots()
-    plt.plot(x, ori_data, "r")
-    plt.plot(diff_x,diff_data,"g")
+    plt.plot(x, ori_data, "r",label="Ori")
+    plt.plot(diff_x,diff_data,"g",label="Diff")
     plt.plot(x1,denoise_data-150,"b")
     # plt.plot(x2,base_line,"g")
-    plt.plot(x3,moving_line,"r")
+    plt.plot(x3,moving_line,markerfacecolor="#51A6D8",label="Mov")
+    
+    
 
     i=1
     for i in np.arange(r_pick.size):
         circle1 = plt.Circle((r_pick[i],r_high[i]),radius=3,color="r",fill=False)
         ax.add_patch(circle1)
  
+    plt.legend()
     plt.show()
 
 def PickRPoint(data,moving_line):
