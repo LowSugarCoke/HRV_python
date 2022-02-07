@@ -1,9 +1,13 @@
 import hrv_lib as hrv 
 import numpy as np
 
+# 讀取檔案
+def ImportData(path):
+    np_data = np.loadtxt(path)    
+    return np_data
 
 if __name__ == '__main__':
-    data = hrv.ImportData("180hz_10minute__15frequency_breath.txt")
+    data = ImportData("180hz_10minute__15frequency_breath.txt")
     diff_data = hrv.Differential(data)
     denoise_data = hrv.denoise(diff_data)
     baseline_data = hrv.BaseLine(denoise_data)
