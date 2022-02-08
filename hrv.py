@@ -13,7 +13,6 @@ if __name__ == '__main__':
     baseline_data = hrv.BaseLine(denoise_data)
     moving_line = hrv.MovingAverage(diff_data)
 
-
     r_pick,r_high = hrv.PickRPoint(diff_data,moving_line)
     r_pick = np.array(r_pick)
     r_high = np.array(r_high)
