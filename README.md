@@ -59,3 +59,7 @@ Done it and Run code
 ```
 ![img](https://raw.githubusercontent.com/LowSugarCoke/HRV_python/main/img/interpolated.PNG)
 ![img](https://raw.githubusercontent.com/LowSugarCoke/HRV_python/main/img/frequency_domain.PNG)
+
+## Reference
+https://ieeexplore.ieee.org/document/754529/authors#authors
+https://www.kaggle.com/stetelepta/exploring-heart-rate-variability-using-python
