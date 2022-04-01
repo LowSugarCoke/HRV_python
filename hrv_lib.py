@@ -7,8 +7,8 @@ from scipy.integrate import trapz
 from scipy import signal
 
 
-# 微分
 def Differential(data):
+    # 微分
     d = np.arange(data.size)
     for i in range(2, data.size-2):
         # So and Chan algorithm
@@ -16,10 +16,9 @@ def Differential(data):
         d = np.convolve(data, np.array([2, 1, 0, -1, -2]))
     return d
 
-# 小波
-
 
 def Denoise(data):
+    # 小波
     coeffs = pywt.wavedec(data=data, wavelet='db5', level=9)
     cA9, cD9, cD8, cD7, cD6, cD5, cD4, cD3, cD2, cD1 = coeffs
 
@@ -35,19 +34,17 @@ def Denoise(data):
     rdata = pywt.waverec(coeffs=coeffs, wavelet='db5')
     return rdata
 
-# 去除基線飄移
-
 
 def BaseLine(data):
+    # 去除基線飄移
     filter = int(0.8*180)
     baseline = medfilt(data, filter+1)
     filter_data = data-baseline
     return filter_data
 
-# 動態閥值
-
 
 def DynamicThreshold(data):
+    # 動態閥值
     moving_line = np.arange(float(data.size+1))
     temp = 0.0
     i = 0
@@ -56,15 +53,21 @@ def DynamicThreshold(data):
     return moving_line
 
 
-def Plot(ori_data, diff_data, denoise_data, base_line, moving_line, r_pick, r_high):
-    x = np.linspace(0, ori_data.size, ori_data.size)
+def PlotTimeDomain(ori_data, diff_data, denoise_data, base_line, dynamic_line, r_pick, r_high):
+    ori_x = np.linspace(0, ori_data.size, ori_data.size)
     diff_x = np.linspace(0, diff_data.size, diff_data.size)
-    x3 = np.linspace(0, moving_line.size, moving_line.size)
+    denoise_x = np.linspace(0, denoise_data.size, denoise_data.size)
+    base_x = np.linspace(0, base_line.size, base_line.size)
+    dynamic_x = np.linspace(0, dynamic_line.size, dynamic_line.size)
 
     fig, ax = plt.subplots()
-    plt.plot(x, ori_data, "r", label="Original signal")
+    plt.plot(ori_x, ori_data, "r", label="Original signal")
     plt.plot(diff_x, diff_data, "g", label="Differential")
-    plt.plot(x3, moving_line, markerfacecolor="#51A6D8",
+    plt.plot(denoise_x, denoise_data-150,
+             markerfacecolor='#623CEA', label="Denoise")
+    plt.plot(base_x, base_line-300,
+             markerfacecolor='#FFFD98', label="Base Line")
+    plt.plot(dynamic_x, dynamic_line, markerfacecolor="#51A6D8",
              label="Dynamic threshold")
 
     i = 1
@@ -104,7 +107,7 @@ def PickRPoint(data, moving_line):
     return r_position, r_high
 
 
-def CalHeartRate(r_position, sample_rate):
+def CalRRInterval(r_position, sample_rate):
     rr_interval = []
     for i in range(2, r_position.size):
         rr_interval.append(r_position[i]-r_position[i-1])
@@ -145,10 +148,9 @@ def Interpolation(rr_interval):
 
     return rr_interpolated
 
-# ref:https://www.kaggle.com/stetelepta/exploring-heart-rate-variability-using-python
-
 
 def FrequencyDomain(rr_interpolated, fs=4):
+    # ref:https://www.kaggle.com/stetelepta/exploring-heart-rate-variability-using-python
     # Estimate the spectral density using Welch's method
     fxx, pxx = signal.welch(x=rr_interpolated, fs=fs)
 
