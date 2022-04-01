@@ -9,6 +9,8 @@
 
 >Heart rate variability (HRV) is the physiological phenomenon of variation in the time interval between heartbeats. It is measured by the variation in the beat-to-beat interval.
 
+
+
 ## Download source code
 In order to use hrv analysis, make sure that you have python 3.9.7 and python packages as below:
 * numpy 1.21.4
@@ -33,28 +35,27 @@ After installing VScode and Python, download the extension in VSCode as follow:
 
 Done it and Run code
 
+
 ## Introduction
 ### Time-Domain Processing
-```flow
-  start=>start: Import ecg data
-  differential=>operation: Differential
-  denoise=>operation: Denoise
-  baseline=>operation: BaseLine
-  pickrpoint=>operation: Pick R Point
-  end=>end: Plot time-domain signal
-  start->differential->denoise->baseline->pickrpoint->end
+```mermaid
+    flowchart TD;
+     A[Import ECG data]-->B[Differential];
+     B[Differential]-->C[Denoise];
+     C[Denoise]-->D[BaseLine];
+     D[BaseLine]-->E[Pick R Point];
+     E[Pick R Point]-->F[Plot time-domain signal]
 ```
 
 ![img](https://raw.githubusercontent.com/LowSugarCoke/HRV_python/main/img/time_domain.PNG)
 
 ### Frequency-Domain Processing
-```flow
-  start=>start: Import differential ecg and dynamic line
-  rr_interval=>operation: Calculate RR interval
-  interpolation=>operation: Interpolation
-  frequency=>operation: Transfer to Frequency Domain 
-  end=>end: Plot frequency-domain signal
-  start->rr_interval->interpolation->frequency->end
+```mermaid
+  flowchart TD;
+   A[Import differential ecg and dynamic line]-->B[Calculate RR interval];
+   B[Calculate RR interval]-->C[Interpolation];
+   C[Interpolation]-->D[Transfer to frequency domain];
+   D[Transfer to frequency domain]-->E[Plot frequency-domain signal]
 ```
 ![img](https://raw.githubusercontent.com/LowSugarCoke/HRV_python/main/img/interpolated.PNG)
 ![img](https://raw.githubusercontent.com/LowSugarCoke/HRV_python/main/img/frequency_domain.PNG)
