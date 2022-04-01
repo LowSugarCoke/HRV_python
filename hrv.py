@@ -9,9 +9,9 @@ def ImportData(path):
 if __name__ == '__main__':
     data = ImportData("180hz_10minute__15frequency_breath.txt")
     diff_data = hrv.Differential(data)
-    denoise_data = hrv.denoise(diff_data)
+    denoise_data = hrv.Denoise(diff_data)
     baseline_data = hrv.BaseLine(denoise_data)
-    moving_line = hrv.MovingAverage(diff_data)
+    moving_line = hrv.DynamicThreshold(diff_data)
 
     r_pick,r_high = hrv.PickRPoint(diff_data,moving_line)
     r_pick = np.array(r_pick)
@@ -21,7 +21,7 @@ if __name__ == '__main__':
     print(rr_interval)
 
     rr_interpolated = hrv.Interpolation(rr_interval)
-    results, fxx, pxx = hrv.frequency_domain(rr_interpolated)
+    results, fxx, pxx = hrv.FrequencyDomain(rr_interpolated)
 
 
 
