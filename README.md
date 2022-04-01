@@ -12,7 +12,7 @@
 
 
 ## Download source code
-In order to use hrv analysis, make sure that you have python 3.9.7 and python packages as below:
+In order to analysis hrv, make sure that you have python 3.9.7 and python packages as below:
 * numpy 1.21.4
 * matplotlib 3.5.0
 * PyWavelets 1.2.0
