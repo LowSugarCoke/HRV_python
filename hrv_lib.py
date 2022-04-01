@@ -59,16 +59,13 @@ def DynamicThreshold(data):
 def Plot(ori_data, diff_data, denoise_data, base_line, moving_line, r_pick, r_high):
     x = np.linspace(0, ori_data.size, ori_data.size)
     diff_x = np.linspace(0, diff_data.size, diff_data.size)
-    # x1 = np.linspace(0,denoise_data.size,denoise_data.size)
-    # x2 = np.linspace(0,base_line.size,base_line.size)
     x3 = np.linspace(0, moving_line.size, moving_line.size)
 
     fig, ax = plt.subplots()
-    plt.plot(x, ori_data, "r", label="Ori")
-    plt.plot(diff_x, diff_data, "g", label="Diff")
-    # plt.plot(x1,denoise_data-150,"b")
-    # plt.plot(x2,base_line,"g")
-    plt.plot(x3, moving_line, markerfacecolor="#51A6D8", label="Mov")
+    plt.plot(x, ori_data, "r", label="Original signal")
+    plt.plot(diff_x, diff_data, "g", label="Differential")
+    plt.plot(x3, moving_line, markerfacecolor="#51A6D8",
+             label="Dynamic threshold")
 
     i = 1
     for i in np.arange(r_pick.size):
